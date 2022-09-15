@@ -6,6 +6,7 @@ Python version of https://github.com/ncase/trust
 <img src="example/graph.png" width="800">
 
 Population
+
 Copycat: 30
 Copykitten: 30
 Cheater: 30
@@ -16,6 +17,7 @@ Simpleton: 30
 Random: 30
 
 Payoffs
+
 Punishment: 0
 Sucker: -2.5
 Reward: 5
@@ -27,6 +29,7 @@ Losers per cycle: 20
 Mistake probability: 6
 
 Population after evolution
+
 Copycat: 0
 Copykitten: 116
 Cheater: 0
