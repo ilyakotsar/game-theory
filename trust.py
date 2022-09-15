@@ -255,8 +255,8 @@ def progress_bar(it, prefix='', size=60, out=sys.stdout):
 
 def main():
     try:
-        population = {}
         print('Population')
+        population = {}
         population[Game.PLAYERS[0].name] = int(input('Copycat: '))
         population[Game.PLAYERS[1].name] = int(input('Copykitten: '))
         population[Game.PLAYERS[2].name] = int(input('Cheater: '))
