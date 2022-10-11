@@ -40,6 +40,11 @@ Simpleton: 0
 Random: 0
 
 ### Usage
+
+Download release for [Windows](https://github.com/ilyakotsar/trust/releases/download/v1.0.0/trust.exe)
+
+Or use source code:
+
 Install Matplotlib
 ```
 pip install matplotlib
