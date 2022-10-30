@@ -1,5 +1,6 @@
 # Trust
-Python version of https://github.com/ncase/trust
+
+Python version of https://github.com/ncase/trust without limits.
 
 ### Example
 
