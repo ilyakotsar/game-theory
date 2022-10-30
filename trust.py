@@ -4,8 +4,7 @@ import sys
 from datetime import datetime
 try:
     import matplotlib.pyplot as plt
-except ModuleNotFoundError as error:
-    print(error)
+except ModuleNotFoundError:
     print('Enter the command: pip install matplotlib')
     sys.exit()
 
@@ -274,12 +273,10 @@ def main():
         cycles = int(input('Cycles: '))
         losers = int(input('Losers per cycle: '))
         if losers < 1 or losers >= sum(population.values()):
-            print('Error: invalid input')
-            return
+            raise ValueError
         mist_prob = float(input('Mistake probability: '))
         if mist_prob < 0 or mist_prob >= 100:
-            print('Error: invalid input')
-            return
+            raise ValueError
         print('')
         changes = {}
         start = datetime.now()
@@ -296,8 +293,8 @@ def main():
             print(f'{i}: {population[i]}')
         print('\nTime:', datetime.now() - start)
         show_graph(changes)
-    except ValueError as error:
-        print(error)
+    except ValueError:
+        print('Error: incorrect input')
         return
 
 
