@@ -1,6 +1,6 @@
 # Trust
 
-Python version of https://github.com/ncase/trust without limits.
+Python version of https://github.com/ncase/trust without limits
 
 ### Example
 
@@ -42,7 +42,7 @@ Random: 0
 
 ### Usage
 
-Download release for [Windows](https://github.com/ilyakotsar/trust/releases/download/v1.0.0/trust.exe)
+Download release for [Windows](https://github.com/ilyakotsar/Trust/releases/download/v1.0.0/Trust.exe)
 
 Or use source code:
 
