@@ -8,8 +8,15 @@ except ModuleNotFoundError:
     print('Enter the command: pip install matplotlib')
     sys.exit()
 
-
-MOVES = ('cooperate', 'cheat')
+population = {}
+punishment = ''
+temptation = ''
+sucker = ''
+reward = ''
+rounds = ''
+cycles = ''
+losers = ''
+mistake_prob = ''
 
 
 class Copycat():
@@ -17,9 +24,8 @@ class Copycat():
     first_move = 'cooperate'
 
     @staticmethod
-    def next_move(*args):
-        i, other_moves = args[0], args[2]
-        return other_moves[i - 1]
+    def next_move(i, a, b):
+        return b[i - 1]
 
 
 class Copykitten():
@@ -27,11 +33,10 @@ class Copykitten():
     first_move = 'cooperate'
 
     @staticmethod
-    def next_move(*args):
-        i, other_moves = args[0], args[2]
-        if other_moves[i - 1] == 'cheat':
+    def next_move(i, a, b):
+        if b[i - 1] == 'cheat':
             if i > 0:
-                if other_moves[i - 1] == other_moves[i - 2]:
+                if b[i - 1] == b[i - 2]:
                     move = 'cheat'
                 else:
                     move = 'cooperate'
@@ -47,7 +52,7 @@ class Cheater():
     first_move = 'cheat'
 
     @staticmethod
-    def next_move(*args):
+    def next_move(i, a, b):
         return 'cheat'
 
 
@@ -56,7 +61,7 @@ class Cooperator():
     first_move = 'cooperate'
 
     @staticmethod
-    def next_move(*args):
+    def next_move(i, a, b):
         return 'cooperate'
 
 
@@ -65,9 +70,8 @@ class Grudger():
     first_move = 'cooperate'
 
     @staticmethod
-    def next_move(*args):
-        other_moves = args[2]
-        if 'cheat' in other_moves:
+    def next_move(i, a, b):
+        if 'cheat' in b:
             move = 'cheat'
         else:
             move = 'cooperate'
@@ -79,15 +83,14 @@ class Detective():
     first_move = 'cooperate'
 
     @staticmethod
-    def next_move(*args):
-        i, other_moves = args[0], args[2]
+    def next_move(i, a, b):
         if i <= 3:
             if i == 1:
                 move = 'cheat'
             else:
                 move = 'cooperate'
-        if 'cheat' in other_moves:
-            move = other_moves[i - 1]
+        if 'cheat' in b:
+            move = b[i - 1]
         else:
             move = 'cheat'
         return move
@@ -98,25 +101,24 @@ class Simpleton():
     first_move = 'cooperate'
 
     @staticmethod
-    def next_move(*args):
-        i, my_moves, other_moves = args[0], args[1], args[2]
-        if other_moves[i - 1] == 'cooperate':
-            move = my_moves[i - 1]
+    def next_move(i, a, b):
+        if b[i - 1] == 'cooperate':
+            move = a[i - 1]
         else:
-            if my_moves[i - 1] == 'cooperate':
+            if a[i - 1] == 'cooperate':
                 move = 'cheat'
-            elif my_moves[i - 1] == 'cheat':
+            elif a[i - 1] == 'cheat':
                 move = 'cooperate'
         return move
 
 
 class Random():
     name = 'Random'
-    first_move = random.choice(MOVES)
+    first_move = random.choice(('cooperate', 'cheat'))
 
     @staticmethod
-    def next_move(*args):
-        return random.choice(MOVES)
+    def next_move(i, a, b):
+        return random.choice(('cooperate', 'cheat'))
 
 
 class Game:
@@ -135,9 +137,9 @@ class Game:
         self.player_a = player_a
         self.player_b = player_b
 
-    def play(self, pun, sucker, reward, tempt, rounds, mist_prob):
-        wrong_moves_a = Game.mistakes(rounds, mist_prob)
-        wrong_moves_b = Game.mistakes(rounds, mist_prob)
+    def play(self):
+        wrong_moves_a = self.mistakes()
+        wrong_moves_b = self.mistakes()
         moves_a, moves_b = [], []
         payoffs_a, payoffs_b = [], []
         for i in range(rounds):
@@ -145,35 +147,34 @@ class Game:
                 move_a = self.player_a.next_move(i, moves_a, moves_b)
                 move_b = self.player_b.next_move(i, moves_b, moves_a)
                 if i in wrong_moves_a:
-                    move_a = MOVES[::-1][MOVES.index(move_a)]
+                    move_a = self.replace_move(move_a)
                 if i in wrong_moves_b:
-                    move_b = MOVES[::-1][MOVES.index(move_b)]
+                    move_b = self.replace_move(move_b)
             else:
                 move_a = self.player_a.first_move
                 move_b = self.player_b.first_move
             moves_a.append(move_a)
             moves_b.append(move_b)
-            payoff_1, payoff_2 = Game.get_payoffs(move_a, move_b, pun, sucker, reward, tempt)
+            payoff_1, payoff_2 = self.get_payoffs(move_a, move_b)
             payoffs_a.append(payoff_1)
             payoffs_b.append(payoff_2)
         return sum(payoffs_a), sum(payoffs_b)
 
     @staticmethod
-    def get_payoffs(move_a, move_b, pun, sucker, reward, tempt):
+    def get_payoffs(move_a, move_b):
         if move_a == 'cheat' and move_b == 'cheat':
-            payoff_a, payoff_b = pun, pun
+            return punishment, punishment
         elif move_a == 'cooperate' and move_b == 'cheat':
-            payoff_a, payoff_b = sucker, tempt
+            return sucker, temptation
         elif move_a == 'cheat' and move_b == 'cooperate':
-            payoff_a, payoff_b = tempt, sucker
+            return temptation, sucker
         elif move_a == 'cooperate' and move_b == 'cooperate':
-            payoff_a, payoff_b = reward, reward
-        return payoff_a, payoff_b
+            return reward, reward
 
     @staticmethod
-    def mistakes(rounds, mist_prob):
-        true_mist_prob = (rounds - 2) * mist_prob / rounds
-        number_of_mistakes = round((rounds - 2) * true_mist_prob / 100)
+    def mistakes():
+        true_mistake_prob = (rounds - 2) * mistake_prob / rounds
+        number_of_mistakes = round((rounds - 2) * true_mistake_prob / 100)
         wrong_moves = []
         if number_of_mistakes > 0:
             for i in range(number_of_mistakes):
@@ -190,10 +191,16 @@ class Game:
                         break
         return wrong_moves
 
+    @staticmethod
+    def replace_move(move):
+        if move == 'cooperate':
+            return 'cheat'
+        elif move == 'cheat':
+            return 'cooperate'
+
 
 class Tournament:
-    @staticmethod
-    def play(population, pun, sucker, reward, tempt, rounds, losers, mist_prob):
+    def play(self):
         result = {}
         for i in range(len(Game.PLAYERS)):
             player_a = Game.PLAYERS[i]
@@ -206,7 +213,7 @@ class Tournament:
                         elif i == j and a == b:
                             continue
                         else:
-                            score_a, score_b = Game(player_a, player_b).play(pun, sucker, reward, tempt, rounds, mist_prob)
+                            score_a, score_b = Game(player_a, player_b).play()
                             n = f'{player_a.name}{a + 1}'
                             if n in result:
                                 result[n] += score_a
@@ -219,7 +226,10 @@ class Tournament:
                             else:
                                 result[n] = 0
                                 result[n] += score_b
-        # evolution
+        self.evolution(result)
+
+    @staticmethod
+    def evolution(result):
         tuples = [(k, result[k]) for k in sorted(result, key=result.get, reverse=False)]
         for x in range(losers):
             loser = [i for i in tuples[x][0] if i not in string.digits]
@@ -227,16 +237,40 @@ class Tournament:
             population[''.join(loser)] -= 1
             population[''.join(winner)] += 1
 
-
-def show_graph(changes):
+"""
+def general_plot(changes):
     for i in changes:
         plt.plot(changes[i], label=i)
-    plt.legend(bbox_to_anchor=(1.01, 1), loc='upper left', borderaxespad=0)
+    plt.legend(loc='upper left', borderaxespad=0.5)
     plt.title('Evolution')
     plt.xlabel('Cycles')
     plt.ylabel('Population')
-    plt.grid()
     plt.show()
+"""
+
+def separate_plots(changes):
+    coordinates = (
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (1, 0),
+        (1, 1),
+        (1, 2),
+        (2, 0),
+        (2, 1),
+    )
+    fig, axs = plt.subplots(3, 3)
+    x = 0
+    for i in changes:
+        axs[coordinates[x]].plot(changes[i])
+        axs[coordinates[x]].set_title(i)
+        x += 1
+    for ax in axs.flat:
+        ax.set(xlabel='Cycles', ylabel='Population')
+    fig.delaxes(axs[2, 2])
+    fig.tight_layout()
+    fig.show()
+    input()
 
 
 def progress_bar(it, prefix='', size=60, out=sys.stdout):
@@ -245,6 +279,7 @@ def progress_bar(it, prefix='', size=60, out=sys.stdout):
     def show(j):
         x = int(size*j/count)
         print(f"{prefix}[{u'='*x}{('·'*(size-x))}] {j}/{count}", end='\r', file=out, flush=True)
+
     show(0)
     for i, item in enumerate(it):
         yield item
@@ -254,47 +289,44 @@ def progress_bar(it, prefix='', size=60, out=sys.stdout):
 
 def main():
     try:
+        global population
+        global punishment, sucker, reward, temptation
+        global rounds, cycles, losers, mistake_prob
         print('Population')
-        population = {}
-        population[Game.PLAYERS[0].name] = int(input('Copycat: '))
-        population[Game.PLAYERS[1].name] = int(input('Copykitten: '))
-        population[Game.PLAYERS[2].name] = int(input('Cheater: '))
-        population[Game.PLAYERS[3].name] = int(input('Cooperator: '))
-        population[Game.PLAYERS[4].name] = int(input('Grudger: '))
-        population[Game.PLAYERS[5].name] = int(input('Detective: '))
-        population[Game.PLAYERS[6].name] = int(input('Simpleton: '))
-        population[Game.PLAYERS[7].name] = int(input('Random: '))
+        for i in range(len(Game.PLAYERS)):
+            name = Game.PLAYERS[i].name
+            population[name] = int(input(f'{name}: '))
         print('\nPayoffs')
-        pun = float(input('Punishment: '))
+        punishment = float(input('Punishment: '))
+        temptation = float(input('Temptation: '))
         sucker = float(input('Sucker: '))
         reward = float(input('Reward: '))
-        tempt = float(input('Temptation: '))
         rounds = int(input('\nRounds: '))
         cycles = int(input('Cycles: '))
         losers = int(input('Losers per cycle: '))
         if losers < 1 or losers >= sum(population.values()):
             raise ValueError
-        mist_prob = float(input('Mistake probability: '))
-        if mist_prob < 0 or mist_prob >= 100:
+        mistake_prob = float(input('Mistake probability: '))
+        if mistake_prob < 0 or mistake_prob >= 100:
             raise ValueError
         print('')
         changes = {}
         start = datetime.now()
         for _ in progress_bar(range(cycles), 'Evolution: '):
-            Tournament().play(population, pun, sucker, reward, tempt, rounds, losers, mist_prob)
+            Tournament().play()
             for i in population:
                 if i in changes:
                     changes[i].append(population[i])
                 else:
-                    changes[i] = []
+                    changes[i] = [population[i]]
                     changes[i].append(population[i])
         print('Population after evolution')
         for i in population:
             print(f'{i}: {population[i]}')
         print('\nTime:', datetime.now() - start)
-        show_graph(changes)
+        separate_plots(changes)
     except ValueError:
-        print('Error: incorrect input')
+        print('\nError: incorrect input')
         return
 
 

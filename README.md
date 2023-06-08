@@ -4,37 +4,37 @@ Python version of [trust](https://github.com/ncase/trust) without limits
 
 ### Example
 
-<img src="example/graph.png" width="800">
+<img src="example/plot.png" width="800">
 
 Population
 
-Copycat: 30
-Copykitten: 30
-Cheater: 30
-Cooperator: 30
-Grudger: 30
-Detective: 30
-Simpleton: 30
-Random: 30
+Copycat: 50
+Copykitten: 50
+Cheater: 50
+Cooperator: 50
+Grudger: 50
+Detective: 50
+Simpleton: 50
+Random: 50
 
 Payoffs
 
 Punishment: 0
-Sucker: -2.5
-Reward: 5
-Temptation: 2.75
+Temptation: 2
+Sucker: -2
+Reward: 1.5
 
 Rounds: 30
 Cycles: 30
-Losers per cycle: 20
-Mistake probability: 6
+Losers per cycle: 10
+Mistake probability: 5
 
 Population after evolution
 
-Copycat: 0
-Copykitten: 116
+Copycat: 47
+Copykitten: 350
 Cheater: 0
-Cooperator: 124
+Cooperator: 3
 Grudger: 0
 Detective: 0
 Simpleton: 0
