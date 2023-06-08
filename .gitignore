@@ -1,5 +1,2 @@
 env/
 venv/
-dist/
-build/
-trust.spec
