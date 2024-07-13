@@ -1,0 +1,22 @@
+{
+    "population": {
+        "Copycat": 30,
+        "Copykitten": 30,
+        "Cheater": 30,
+        "Cooperator": 30,
+        "Grudger": 30,
+        "Detective": 30,
+        "Simpleton": 30,
+        "Random": 30
+    },
+    "payoffs": {
+        "punishment": 0,
+        "temptation": 2,
+        "sucker": -2,
+        "reward": 1.5
+    },
+    "game_rounds": 20,
+    "tournament_rounds": 5,
+    "losers_per_tournament": 4,
+    "deviation_probability": 5
+}
