@@ -109,6 +109,8 @@ class Game:
         for i in range(self.settings['game_rounds']):
             move_a = self.player_a.make_move(i, moves_a, moves_b)
             move_b = self.player_b.make_move(i, moves_b, moves_a)
+            move_a = self.replace_move(move_a)
+            move_b = self.replace_move(move_b)
             moves_a.append(move_a)
             moves_b.append(move_b)
             payoff_a, payoff_b = self.get_payoffs(move_a, move_b)
@@ -116,7 +118,7 @@ class Game:
             payoffs_b.append(payoff_b)
         return sum(payoffs_a), sum(payoffs_b)
 
-    def get_payoffs(self, move_a, move_b) -> tuple:
+    def get_payoffs(self, move_a: int, move_b: int) -> tuple:
         cooperate = self.MOVES['cooperate']
         cheat = self.MOVES['cheat']
         punishment = self.settings['payoffs']['punishment']
@@ -131,6 +133,20 @@ class Game:
             return temptation, sucker
         elif move_a == cooperate and move_b == cooperate:
             return reward, reward
+
+    def replace_move(self, move: int) -> int:
+        dev_prob = self.settings['deviation_probability']
+        if dev_prob < 1:
+            return move
+        if dev_prob > 100:
+            dev_prob = 100
+        x = random.randint(1, round(100 / dev_prob))
+        if x == 1:
+            if move == self.MOVES['cooperate']:
+                move = self.MOVES['cheat']
+            elif move == self.MOVES['cheat']:
+                move = self.MOVES['cooperate']
+        return move
 
 
 class Tournament:

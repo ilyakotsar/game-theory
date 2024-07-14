@@ -15,8 +15,8 @@
         "sucker": -2,
         "reward": 1.5
     },
-    "game_rounds": 20,
+    "game_rounds": 10,
     "tournament_rounds": 5,
-    "losers_per_tournament": 4,
-    "deviation_probability": 5
+    "losers_per_tournament": 5,
+    "deviation_probability": 7
 }
