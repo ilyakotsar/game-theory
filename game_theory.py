@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 class Player(ABC):
-    MOVES = {
+    moves = {
         'cooperate': 1,
         'cheat': 2,
     }
@@ -14,85 +14,64 @@ class Player(ABC):
         self.name = name
 
     @abstractmethod
-    def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
+    def make_move(self, **data) -> int:
         pass
 
 
 class Copycat(Player):
-    def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
-        if index > 0:
-            move = enemy_moves[len(enemy_moves) - 2]
-        else:
-            move = self.MOVES['cooperate']
-        return move
+    def __init__(self):
+        super().__init__(name='Copycat')
+
+    def make_move(self, **data) -> int:
+        if not data['enemy_moves']:
+            return self.moves['cooperate']
+        return data['enemy_moves'][-1]
 
 
 class Copykitten(Player):
-    def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
-        if index > 0:
-            move = enemy_moves[len(enemy_moves) - 2]
-        else:
-            move = self.MOVES['cooperate']
-        return move
+    def __init__(self):
+        super().__init__(name='Copykitten')
+
+    def make_move(self, **data) -> int:
+        if len(data['enemy_moves']) > 1:
+            if data['enemy_moves'][-1] == self.moves['cheat']:
+                if data['enemy_moves'][-2] == self.moves['cheat']:
+                    return self.moves['cheat']
+        return self.moves['cooperate']
 
 
 class Cheater(Player):
-    def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
-        return self.MOVES['cheat']
+    def __init__(self):
+        super().__init__(name='Cheater')
+
+    def make_move(self, **data) -> int:
+        return self.moves['cheat']
 
 
 class Cooperator(Player):
-    def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
-        return self.MOVES['cooperate']
+    def __init__(self):
+        super().__init__(name='Cooperator')
+
+    def make_move(self, **data) -> int:
+        return self.moves['cooperate']
 
 
 class Grudger(Player):
-    def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
-        if index > 0:
-            if self.MOVES['cheat'] in enemy_moves:
-                move = self.MOVES['cheat']
-            else:
-                move = self.MOVES['cooperate']
-        else:
-            move = self.MOVES['cooperate']
-        return move
+    def __init__(self):
+        super().__init__(name='Grudger')
 
-
-class Detective(Player):
-    def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
-        if index > 0:
-            if index <= 3:
-                if index == 1:
-                    move = self.MOVES['cheat']
-                else:
-                    move = self.MOVES['cooperate']
-            if self.MOVES['cheat'] in enemy_moves:
-                move = enemy_moves[index - 1]
-            else:
-                move = self.MOVES['cheat']
-        else:
-            move = self.MOVES['cooperate']
-        return move
-
-
-class Simpleton(Player):
-    def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
-        if index > 0:
-            if enemy_moves[index - 1] == self.MOVES['cooperate']:
-                move = my_moves[index - 1]
-            else:
-                if my_moves[index - 1] == self.MOVES['cooperate']:
-                    move = self.MOVES['cheat']
-                elif my_moves[index - 1] == self.MOVES['cheat']:
-                    move = self.MOVES['cooperate']
-        else:
-            move = self.MOVES['cooperate']
-        return move
+    def make_move(self, **data) -> int:
+        if self.moves['cheat'] in data['enemy_moves']:
+            return self.moves['cheat']
+        return self.moves['cooperate']
 
 
 class Random(Player):
-    def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
-        return random.choice(list(Player.MOVES.values()))
+    def __init__(self):
+        super().__init__(name='Random')
+
+    def make_move(self, **data) -> int:
+        return random.choice(list(self.moves.values()))
 
 
 class Game:
@@ -101,17 +80,18 @@ class Game:
         self.player_b = player_b
         self.settings = settings
 
-    MOVES = Player.MOVES
-
     def play(self) -> tuple:
         moves_a, moves_b = [], []
         payoffs_a, payoffs_b = [], []
-        for i in range(self.settings['game_rounds']):
-            move_a = self.player_a.make_move(i, moves_a, moves_b)
-            move_b = self.player_b.make_move(i, moves_b, moves_a)
+        first_player = random.choice([self.player_a, self.player_b])
+        if first_player == self.player_b:
+            self.player_a, self.player_b = self.player_b, self.player_a
+        for _ in range(self.settings['game_rounds']):
+            move_a = self.player_a.make_move(my_moves=moves_a, enemy_moves=moves_b)
             move_a = self.replace_move(move_a)
-            move_b = self.replace_move(move_b)
             moves_a.append(move_a)
+            move_b = self.player_b.make_move(my_moves=moves_b, enemy_moves=moves_a)
+            move_b = self.replace_move(move_b)
             moves_b.append(move_b)
             payoff_a, payoff_b = self.get_payoffs(move_a, move_b)
             payoffs_a.append(payoff_a)
@@ -119,8 +99,8 @@ class Game:
         return sum(payoffs_a), sum(payoffs_b)
 
     def get_payoffs(self, move_a: int, move_b: int) -> tuple:
-        cooperate = self.MOVES['cooperate']
-        cheat = self.MOVES['cheat']
+        cooperate = Player.moves['cooperate']
+        cheat = Player.moves['cheat']
         punishment = self.settings['payoffs']['punishment']
         sucker = self.settings['payoffs']['sucker']
         temptation = self.settings['payoffs']['temptation']
@@ -142,10 +122,10 @@ class Game:
             dev_prob = 100
         x = random.randint(1, round(100 / dev_prob))
         if x == 1:
-            if move == self.MOVES['cooperate']:
-                move = self.MOVES['cheat']
-            elif move == self.MOVES['cheat']:
-                move = self.MOVES['cooperate']
+            if move == Player.moves['cooperate']:
+                move = Player.moves['cheat']
+            elif move == Player.moves['cheat']:
+                move = Player.moves['cooperate']
         return move
 
 
@@ -195,14 +175,12 @@ def main():
     for i in settings:
         print(f'{i}: {settings[i]}')
     players = (
-        Copycat('Copycat'),
-        Copykitten('Copykitten'),
-        Cheater('Cheater'),
-        Cooperator('Cooperator'),
-        Grudger('Grudger'),
-        Detective('Detective'),
-        Simpleton('Simpleton'),
-        Random('Random'),
+        Copycat(),
+        Copykitten(),
+        Cheater(),
+        Cooperator(),
+        Grudger(),
+        Random(),
     )
     population = settings['population']
     start = datetime.now()
@@ -212,6 +190,7 @@ def main():
         for x in population:
             print(f'{x}: {population[x]}')
     print('\nTime:', datetime.now() - start)
+    input()
 
 
 if __name__ == '__main__':
