@@ -15,7 +15,7 @@ class Player(ABC):
 
     @abstractmethod
     def make_move(self, index: int, my_moves: list, enemy_moves: list) -> int:
-        return random.choice(list(Player.MOVES.values()))
+        pass
 
 
 class Copycat(Player):
